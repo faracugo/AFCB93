@@ -37,6 +37,14 @@
       background: linear-gradient(135deg, var(--accent-hover), var(--accent));
       color: #1b1b2f; font-weight: 700; transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+    @keyframes volar {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(5deg); }
+    }
+    .avion {
+    display: inline-block;
+    animation: volar 3s ease-in-out infinite;
+    }
     button:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 209, 220, 0.4); }
     button:active { transform: translateY(0); }
     .err { color: #ffb3b3; text-align: center; display: none; margin-top: 15px; font-weight: 500; }
@@ -125,7 +133,7 @@
           </div>
         </div>
 
-        <p id="mensaje-final" style="margin:0; opacity:0.8;">Estoy super ansiosa por nuestro primer vuelo juntos ✈️✨</p>
+        <p id="mensaje-final" style="margin:0; opacity:0.8;">Estoy super ansiosa por nuestro primer vuelo juntos <span class="avion">✈️</span>✨</p>
       </div>
 
       <audio id="bgm" src="audio.mp3" preload="auto"></audio>
@@ -158,6 +166,7 @@
         c.classList.remove('hidden');
         
         document.getElementById('bgm').play().catch(()=>{});
+        document.title = "Para mi amor ✈️💖"; // ¡Aquí se cambió el título de la pestaña de forma correcta!
         
         iniciarCuentaRegresiva();
       } else {
@@ -165,7 +174,7 @@
         err.classList.remove('shake');
         void err.offsetWidth; 
         err.classList.add('shake');
-      }
+      } 
     }
 
     function iniciarCuentaRegresiva() {
