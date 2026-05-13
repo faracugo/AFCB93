@@ -1,3 +1,0 @@
-## 2) `requirements.txt`
-*(Lo dejo sin librerías externas para que sea ultra fácil)*
-```txt
