@@ -21,7 +21,7 @@
     .card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 22px; padding: 32px 28px; box-shadow: 0 18px 60px #0006;
-      backdrop-filter: blur(10px); /* Efecto cristal */
+      backdrop-filter: blur(10px);
     }
     h1 { margin: 0 0 10px; font-size: 2.2rem; text-align: center; letter-spacing: 1px; }
     .sub { opacity: .85; text-align: center; margin-bottom: 24px; font-size: 1.1rem; }
@@ -53,12 +53,21 @@
     .soft { opacity: .9; line-height: 1.8; font-size: 1.15rem; }
     .heart { display: inline-block; animation: heartbeat 1.5s infinite; color: var(--accent); }
     
-    /* Estilos del contador y detalles */
+    /* Estilos de la cuenta regresiva */
     .contador-box {
       margin-top: 30px; padding: 20px; border-radius: 16px;
       background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border);
     }
-    .numero-dias { font-size: 2.5rem; font-weight: bold; color: var(--accent); display: block; margin: 10px 0; }
+    .timer-container {
+      display: flex; justify-content: center; gap: 15px; margin: 15px 0;
+    }
+    .time-block {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(0, 0, 0, 0.2); padding: 10px 15px; border-radius: 12px;
+      min-width: 60px;
+    }
+    .numero-tiempo { font-size: 2rem; font-weight: bold; color: var(--accent); }
+    .etiqueta { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
     .destaque { font-size: 1.2rem; font-weight: 600; color: #ffb6c1; margin-top: 20px; font-style: italic; }
   </style>
 </head>
@@ -83,7 +92,7 @@
       <div class="center soft">
         <p>Quiero que sepas algo...</p>
         <p>
-          Todos los días <br/>
+          Todos los días... <br/>
           te pienso, <br/>
           te extraño, <br/>
           te espero, <br/>
@@ -93,11 +102,30 @@
         <p><strong>Ha'eta ndeve peteĩ mba'e, Ñandejára ome'ẽ chéve peteĩ mba'e guasu, romoĩvo che rekovepýpe.</strong></p>
       </div>
 
-      <!-- Sección del contador -->
+      <!-- Sección de la cuenta regresiva -->
       <div class="contador-box center">
-        <p style="margin:0; opacity:0.8;">Llevamos compartiendo juntos:</p>
-        <span id="dias" class="numero-dias">...</span>
-        <p style="margin:0; opacity:0.8;">días de pura magia ✨</p>
+        <p style="margin:0; opacity:0.8;">Faltan exactamente:</p>
+        
+        <div id="reloj" class="timer-container">
+          <div class="time-block">
+            <span id="dias" class="numero-tiempo">00</span>
+            <span class="etiqueta">Días</span>
+          </div>
+          <div class="time-block">
+            <span id="horas" class="numero-tiempo">00</span>
+            <span class="etiqueta">Hrs</span>
+          </div>
+          <div class="time-block">
+            <span id="minutos" class="numero-tiempo">00</span>
+            <span class="etiqueta">Min</span>
+          </div>
+          <div class="time-block">
+            <span id="segundos" class="numero-tiempo">00</span>
+            <span class="etiqueta">Seg</span>
+          </div>
+        </div>
+
+        <p id="mensaje-final" style="margin:0; opacity:0.8;">Estoy super ansioda por nuestro primer vuelo juntos ✨</p>
       </div>
 
       <audio id="bgm" src="audio.mp3" preload="auto"></audio>
@@ -108,10 +136,10 @@
     // 🔐 CONTRASEÑA
     const PASSWORD = "HOGAR";
     
-    // 📅 CAMBIA ESTA FECHA por su fecha especial (Año, Mes - 1, Día)
-    // El mes empieza en 0 (Enero = 0, Febrero = 1, Marzo = 2, Abril = 3...)
-    // Ejemplo: Si es el 15 de Abril de 2023 -> new Date(2023, 3, 15)
-    const FECHA_INICIO = new Date(2026, 1, 4); 
+    // ⏳ CAMBIA ESTA FECHA por la fecha y hora que están esperando
+    // Formato: "Mes Día, Año Hora:Minutos:Segundos" (en inglés)
+    // Ejemplo: "December 31, 2026 00:00:00"
+    const FECHA_DESTINO = new Date("June 11, 2026 01:41:00").getTime();
 
     // Permitir enviar con la tecla Enter
     document.getElementById('pwd').addEventListener('keyup', function(event) {
@@ -121,7 +149,7 @@
     });
 
     function enter(){
-      const v = document.getElementById('pwd').value.toUpperCase(); // Convierte a mayúscula para evitar errores
+      const v = document.getElementById('pwd').value.toUpperCase();
       const err = document.getElementById('err');
       
       if(v === PASSWORD){
@@ -129,24 +157,42 @@
         const c = document.getElementById('content');
         c.classList.remove('hidden');
         
-        // El navegador permite autoplay si hubo interacción previa (como el clic o enter)
         document.getElementById('bgm').play().catch(()=>{});
         
-        calcularDias();
+        iniciarCuentaRegresiva();
       } else {
         err.style.display = 'block';
-        // Reinicia la animación de error para que tiemble cada vez que se equivoca
         err.classList.remove('shake');
         void err.offsetWidth; 
         err.classList.add('shake');
       }
     }
 
-    function calcularDias() {
-      const hoy = new Date();
-      const diferencia = hoy.getTime() - FECHA_INICIO.getTime();
-      const dias = Math.floor(diferencia / (1000 * 3600 * 24));
-      document.getElementById('dias').innerText = dias;
+    function iniciarCuentaRegresiva() {
+      const timer = setInterval(function() {
+        const ahora = new Date().getTime();
+        const distancia = FECHA_DESTINO - ahora;
+
+        // Si la fecha ya llegó
+        if (distancia < 0) {
+          clearInterval(timer);
+          document.getElementById('reloj').innerHTML = "<span class='numero-tiempo' style='font-size: 1.8rem; margin: 15px 0;'>¡Llegó el día! 🎉</span>";
+          document.getElementById('mensaje-final').style.display = "none";
+          return;
+        }
+
+        // Cálculos matemáticos para días, horas, minutos y segundos
+        const dias = Math.floor(distancia / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+        const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+        // Mostrar en el HTML con dos dígitos (ej: 09 en vez de 9)
+        document.getElementById('dias').innerText = dias.toString().padStart(2, '0');
+        document.getElementById('horas').innerText = horas.toString().padStart(2, '0');
+        document.getElementById('minutos').innerText = minutos.toString().padStart(2, '0');
+        document.getElementById('segundos').innerText = segundos.toString().padStart(2, '0');
+      }, 1000);
     }
   </script>
 </body>
